@@ -9,7 +9,7 @@ function require() {
         request.send();
         var script = request.responseText;
         if (translate)
-            script = loosp2js(false, true, script);
+            script = "// Loosp translate code: " + args[i] + "\n" + loosp2js(false, true, script);
         var elm = document.createElement("script");
         elm.type = "text/javascript";
         elm.src = "data:text/javascript;base64," + btoa(script);
@@ -242,13 +242,33 @@ var loosp2js = (function () {
 
         begin: {
             on: "sexpr",
-            pattern: /^begin(\s+[^\s\(\)]+)+$/,
+            pattern: /^begin(\s+\S+)+$/,
             translate: function (program, tokens, match) {
-                tokens.shift(); // discard "for-each"
-                var tail = tokens.pop();
-                tokens.push("return " + tail);
-                var body = tokens.join(";\n ");
-                return makeExpr(program, "begin", "(function(){\n" + body + ";\n}).call(this)");
+                tokens.shift(); // discard "begin"
+                var body = tokens.join(" ");
+                return makeExpr(program, "sexpr", "let " + makeExpr(program, "sexpr", "") + " " + body);
+            }
+        },
+
+        letExpr: {
+            on: "sexpr",
+            pattern: /^let\s+#sexpr(\d+)#\s+(\S+)$/,
+            translate: function (program, tokens, match, argsSexprID, body) {
+                var args = program.sexpr[argsSexprID]
+                    .replace(/(#sexpr|#)/g, "")
+                    .split(/\s+/)
+                    .map(function (m) {
+                        return program.sexpr[m].split(/\s+/);
+                    });
+                
+                var vals = args.map(function (m) { return m[1]; });
+                args = args.map(function (m) { return m[0]; });
+                var parts = body.split(/\s+/);
+                var tail = parts.pop();
+                parts.push("return " + tail);
+                body = parts.join(" ");
+                return makeExpr(program, "letExpr", "(function(" + args.join(",")
+                    +"){"+body+"}).call(this, "+vals.join(",")+")");
             }
         },
 

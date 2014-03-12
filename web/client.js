@@ -1,5 +1,6 @@
 // setup the drawing area
 // test draw
+
 (set! g.fillStyle "#00007f")
 (g.fillRect 0 0 WIDTH 20)
 (set! g.font "12pt Lucida Console")
