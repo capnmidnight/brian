@@ -1,0 +1,12 @@
+*{
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    border:0;
+    margin:0;
+    padding:0;
+}
+body
+{
+    background-color: black;
+}

@@ -1,0 +1,33 @@
+{
+  "name": "brian",
+  "version": "0.0.0",
+  "description": "A roguelike about a fish",
+  "main": "server.js",
+  "scripts": {
+    "test": "node server.js --test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/capnmidnight/brian.git"
+  },
+  "keywords": [
+    "fish",
+    "rogue",
+    "roguelike",
+    "adventure",
+    "game",
+    "7DRL"
+  ],
+  "author": "Sean T. McBeth",
+  "license": "MIT License",
+  "bugs": {
+    "url": "https://github.com/capnmidnight/brian/issues"
+  },
+  "homepage": "https://github.com/capnmidnight/brian",
+  "dependencies": {
+    "readline": "0.0.3",
+    "socket.io": "~0.9.16",
+    "mime": "~1.2.11"
+  }
+}
