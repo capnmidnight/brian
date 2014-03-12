@@ -2,6 +2,7 @@ var format = require("util").format,
     readline = require('readline'),
     fs = require("fs"),
     http = require("http"),
+    proc = require("child_process"),
     webServer = require("./src/webServer.js"),
     app = http.createServer(webServer("./web/")),
     rl = readline.createInterface(process.stdin, process.stdout),
@@ -13,9 +14,16 @@ var format = require("util").format,
 rl.setPrompt('BRIAN ADMIN :> ');
 rl.on('line', function (line) {
     var cmd = line.trim();
-    core.log(cmd);
+    console.log(cmd);
     try {
-        core.log(eval(cmd));
+        if (cmd == "push") {
+            push = proc.execFile("push.bat");
+            push.stdout.on("data", function (data) {
+                console.log("FTP: ", data);
+            });
+        }
+        else
+            console.log(eval(cmd));
     }
     catch (exp) {
         process.stderr.write(exp.message + "\n");
@@ -29,6 +37,5 @@ rl.prompt();
 app.listen(port);
 
 if (process.argv.indexOf("--test") > -1) {
-    var proc = require("child_process");
     proc.execFile("explorer", ["http://127.0.0.1:"+port]);
 }

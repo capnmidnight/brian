@@ -21,26 +21,13 @@
 (define HEIGHT 0)
 (define MID_WIDTH 0)
 (define MID_HEIGHT 0)
-
-(define (hideAddressBar)
-    (when (not window.location.hash)
-        (when (< document.height window.outerHeight)
-            (set! document.body.style.height (+ window.outerHeight 50 "px")))
-        (setTimeout (lambda () (window.scrollTo 0 1)) 50))
-  undefined)
-
-(when (not window.pageYOffset)
-    (hideAddressBar))
-
-(on window:orientationchange hideAddressBar)
-
 (define (setWindowSize)
 	(set! WIDTH (- window.innerWidth 5))
 	(set! HEIGHT (- window.innerHeight 5))
 	(set! MID_WIDTH (* 0.5 WIDTH))
 	(set! MID_HEIGHT (* 0.5 HEIGHT))
     (send front setSize WIDTH HEIGHT)
-    (hideAddressBar)) 
+    undefined) 
 (setWindowSize)
 (on window:resize (setWindowSize.bind window))
 
