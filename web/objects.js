@@ -11,16 +11,32 @@
 
     (set! a (a.join "\n"))
     (set! b (b.join "\n"))
-    (base 10 (* 5.5 a.length) {"10px Consolas #00ff00":[a b]} 2000))
+    (base 10 (* 5.5 a.length) {"10px monospace #00ff00":[a b]} 2000))
 
 (class (Brian:BoardObject)
-    (base 100 100 (new Animation 40 25 {"22px Consolas #c0c0c0":["><>" "-<>"]} 1000))
+    (base 100 100 (new Animation 40 25 {"22px monospace #c0c0c0":["><>" "-<>"]} 1000))
     (set! this.lastBubble 0)
     (method (update dt)
         (BoardObject.prototype.update.call this dt)
         (set! this.dy (+ (* G dt) this.dy))
         (set! this.dx (* 0.99 this.dx))
         (set! this.dy (* 0.99 this.dy))
+        
+        (when (< this.y this.animation.height)
+            (set! this.dy 0)
+            (set! this.y this.animation.height))
+
+        (when (> this.y HEIGHT)
+            (set! this.dy 0)
+            (set! this.y HEIGHT))
+
+        (when (< this.x 0)
+            (set! this.dx 0)
+            (set! this.x 0))
+
+        (when (> this.x (- WIDTH this.animation.width))
+            (set! this.dx 0)
+            (set! this.x (- WIDTH this.animation.width)))
         
         (set! this.lastBubble (+ this.lastBubble dt))
         (when (> this.lastBubble 2000)
@@ -31,5 +47,5 @@
         ret))
 
 (class (Bubble:BoardObject x y)
-    (base x y (new Animation 10 10 {"10px Consolas #0000ff":["." "o" "O"]} 3000 true))
+    (base x y (new Animation 10 10 {"10px monospace #0000ff":["." "o" "O"]} 3000 true))
     (set! this.dy -0.01))
