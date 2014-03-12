@@ -1,20 +1,15 @@
-// setup the drawing area
-// test draw
+(define brian (new Brian))
+(define bubbles [])
 
-(set! g.fillStyle "#00007f")
-(g.fillRect 0 0 WIDTH 20)
-(set! g.font "12pt Lucida Console")
-(set! g.fillStyle "#c0c0c0")
-(g.fillText "Brian!" 0 15)
+(define plants [])
 
-(define brian (new Shape 50 50 {
-    "17px Consolas #c0c0c0":
-" 
-><>"
-    "17px Consolas #0000ff":
-"~_^
 
-~_^"}))
+(define i 40)
+(while (> i 0)
+    (plants.push (new Plant (+ 5 (rand 15))))
+    (set! i (- i  1)))
+
+(define G 0.00005)
 
 (define angle 0)
 (define lt (time))
@@ -25,10 +20,46 @@
     (g.save)
     (set! g.fillStyle (rgba 0 0 0 1))
     (g.fillRect 0 0 WIDTH HEIGHT)
-    (g.translate 150 150)
-    (g.rotate angle)
-    (set! g.strokeStyle (rgba 0 255 0 0.5))
-    (g.strokeRect 100 0 brian.img.width brian.img.height)
-    (brian.draw 100 0)
+    (set! bubbles (bubbles.concat (brian.update dt)))
+    (brian.draw)
+    (for (var i in bubbles)
+        (bubbles[i].update dt)
+        (bubbles[i].draw))
+    (set! bubbles (bubbles.filter (lambda (b) (> b.y 0))))
+    (for (var i in plants)
+        (plants[i].update dt)
+        (plants[i].draw (* i 25) HEIGHT))
     (set! angle (+ angle (* dt 0.001)))
     (g.restore)) 1)
+
+(define (moveHoriz ddx)
+    (set! brian.dx (+ brian.dx ddx)))
+
+(define (moveLeft)
+    (moveHoriz -0.1))
+
+(define (moveRight)
+    (moveHoriz 0.1))
+
+(define (moveUp)
+    (set! brian.dy (+ brian.dy -0.1)))
+
+(on window:keydown (lambda (evt)
+    (when (= evt.keyCode UP)
+        (moveUp))
+    (when (= evt.keyCode LEFT)
+        (moveLeft))
+    (when (= evt.keyCode RIGHT)
+        (moveRight))
+
+    (when (not (or (and evt.ctrlKey (= evt.keyCode R_KEY))
+                   (= evt.keyCode ALT)))
+        (evt.preventDefault))
+        undefined))
+
+(on window:touchstart (lambda (evt)
+    (define touch evt.touches[0])
+    (if (< touch.clientX MID_WIDTH)
+        (moveLeft)
+        (moveRight))
+    (moveUp)))

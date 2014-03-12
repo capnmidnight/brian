@@ -55,8 +55,10 @@ var loosp2js = (function () {
         var formName, good = true,
             header = !excludeHeader ? "(class (LoospObject) (set! this.typeChain [\"LoospObject\"]) (method (getType) this.typeChain[0]))\n " : "",
             program = { script: [header + script.trim()] };
-        for (var formName in grammar)
+        for (var formName in grammar) {
             program[formName] = [];
+            grammar[formName].name = formName;
+        }
         for (var formName in grammar)
             if (good)
                 good = processForm(program, grammar[formName]);
@@ -67,35 +69,40 @@ var loosp2js = (function () {
     }
 
     function processForm(program, form) {
-        var expr, matches, tokens, expr2, good = true;
-        for (var i = 0, l = program[form.on].length; i < l; ++i) {
-            expr = program[form.on][i];
-            do {
-                program[form.on][i] = expr;
-                matches = expr.match(form.pattern);
-                if (matches) {
-                    tokens = expr.split(/\s+/);
-                    expr2 = expr.replace(
-                        form.pattern,
-                        form.translate.bind(form, program, tokens));
-                    if (expr2 != expr)
-                        expr = expr2
-                }
-            } while (expr != program[form.on][i])
-        }
-
-        if (form.validate) {
-            for (var i = 0; i < program[form.on].length; ++i) {
-                program[form.on][i] = program[form.on][i].replace(form.validate, function (match) {
-                    good = false;
-                    return "\n<err>>>> " + match + " <<<<err>\n";
-                });
+        var expr, matches, tokens, expr2, good = true, todo = [].concat(form.on), on;
+        for (var j = 0; j < todo.length; ++j) {
+            on = program[todo[j]];
+            for (var i = 0, l = on.length; i < l; ++i) {
+                expr = on[i];
+                do {
+                    on[i] = expr;
+                    if (todo[j] == "array" && form.name == "sexpr")
+                        console.log(expr);
+                    matches = expr.match(form.pattern);
+                    if (matches) {
+                        tokens = expr.split(/\s+/);
+                        expr2 = expr.replace(
+                            form.pattern,
+                            form.translate.bind(form, program, tokens));
+                        if (expr2 != expr)
+                            expr = expr2
+                    }
+                } while (expr != on[i])
             }
-            if (!good) {
-                for (var i = 0; i < program.sexpr.length; ++i)
-                    program.sexpr[i] = "(" + program.sexpr[i] + ")";
-                processForm(program, postProcess.compile);
-                console.error("Error: %s in: %s", form.errorMessage, program.script[0]);
+
+            if (form.validate) {
+                for (var i = 0; i < on.length; ++i) {
+                    on[i] = on[i].replace(form.validate, function (match) {
+                        good = false;
+                        return "\n<err>>>> " + match + " <<<<err>\n";
+                    });
+                }
+                if (!good) {
+                    for (var i = 0; i < program.sexpr.length; ++i)
+                        program.sexpr[i] = "(" + program.sexpr[i] + ")";
+                    processForm(program, postProcess.compile);
+                    console.error("Error: %s in: %s", form.errorMessage, program.script[0]);
+                }
             }
         }
         return good;
@@ -134,8 +141,19 @@ var loosp2js = (function () {
             errorMessage: "unterminated string constant"
         },
 
-        array: {
+        sexpr: {
             on: "script",
+            pattern: /\(([^\(\)])*\)/g,
+            translate: function (program, tokens, match) {
+                return makeExpr(program, "sexpr",
+                    match.replace(/(\(|\))/g, ""));
+            },
+            validate: /(\(|\))/g,
+            errorMessage: "un-matched parenthesis"
+        },
+
+        array: {
+            on: ["script", "sexpr"],
             pattern: /\[([^\[\]]*)\]/g,
             translate: function (program, tokens, match) {
                 return makeExpr(program, "array",
@@ -150,7 +168,7 @@ var loosp2js = (function () {
         },
 
         objectLiteral: {
-            on: "script",
+            on: ["script", "array", "sexpr"],
             pattern: /{([^{}]*)}/g,
             translate: function (program, tokens, match, capture1) {
                 capture1 = capture1.replace(/\s*:\s*/g, ":");
@@ -159,17 +177,6 @@ var loosp2js = (function () {
             },
             validate: /({|})/g,
             errorMessage: "unterminated object literal"
-        },
-
-        sexpr: {
-            on: "script",
-            pattern: /\(([^\(\)])*\)/g,
-            translate: function (program, tokens, match) {
-                return makeExpr(program, "sexpr",
-                    match.replace(/(\(|\))/g, ""));
-            },
-            validate: /(\(|\))/g,
-            errorMessage: "un-matched parenthesis"
         },
 
         idsA: {
