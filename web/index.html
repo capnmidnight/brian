@@ -6,7 +6,9 @@
     <meta name="keywords" content="fish,rogue,roguelike,adventure,game,7DRL" />
     <title>Brian: a roguelike about a fish</title>
     <script type="text/javascript" src="loosp.js"></script>
-    <script type="text/loosp" src="client.js"></script>
+    <script type="text/loosp">
+        (require "util" "graphics" "client")
+    </script>
     <link type="text/css" rel="stylesheet" href="style.css">
 </head>
 <body onload="loosp2js()">

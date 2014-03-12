@@ -1,80 +1,33 @@
 // setup the drawing area
-(define (log args...)
-    (console.log.apply console args))
-
-(class (Surface width height)
-    (set! this.canv (document.createElement "canvas"))
-    (set! this.graph (this.canv.getContext "2d"))
-    (this.setSize width height)
-
-    (method (setSize width height)
-        (set! this.canv.width width)
-        (set! this.canv.style.width (+ width "px"))
-        (set! this.canv.height height)
-        (set! this.canv.style.height (+ height "px"))))
-
-(define front (new Surface))
-(define back (new Surface))
-
-(document.body.appendChild front.canv)
-(define g front.graph)
-
-(define WIDTH 0)
-(define HEIGHT 0)
-(define (setWindowSize)
-    (set! WIDTH (- window.innerWidth 5))
-    (set! HEIGHT (- window.innerHeight 5))
-    (send front setSize WIDTH HEIGHT)
-    undefined) 
-(setWindowSize)
-(on window:resize (setWindowSize.bind window))
-
 // test draw
 (set! g.fillStyle "#00007f")
 (g.fillRect 0 0 WIDTH 20)
-(set! g.font "12pt Consolas")
+(set! g.font "12pt Lucida Console")
 (set! g.fillStyle "#c0c0c0")
 (g.fillText "Brian!" 0 15)
 
-(class (Shape width height blah)
-    (set! this.img (new Surface width height))
-
-    (for (var k in blah)
-        (define parts (k.split " "))
-        (define color (parts.pop))
-        (define height parts[0])
-        (set! height (parseInt (height.substring 0 (- height.length 2)) 10))
-        (define font (parts.join " "))
-        (set! this.img.graph.font font)
-        (set! this.img.graph.fillStyle color)
-        (for (var i in blah[k])
-            (define y (* height (+ 1 (parseInt i 10))))
-            (this.img.graph.fillText blah[k][i] 0 y)))
-
-    (method (draw x y)
-        (g.drawImage this.img.canv (or x 0) (or y 0))))
-
 (define brian (new Shape 50 50 {
-    "14px Consolas #c0c0c0":
-            ["" 
-             "><>"]
-    "14px Consolas #0000ff":
-            ["~~~"
-             ""
-             "~~~"]
-            }))
+    "17px Consolas #c0c0c0":
+" 
+><>"
+    "17px Consolas #0000ff":
+"~_^
 
-(define (rgba r g b a)
-            (+ "rgba(" r ", " g ", " b ", " a ")"))
+~_^"}))
 
 (define angle 0)
-
+(define lt (time))
 (setInterval (lambda ()
+    (define t (time))
+    (define dt (- t lt))
+    (set! lt t)
     (g.save)
-    (set! g.fillStyle (rgba 0 0 0 0.0625))
+    (set! g.fillStyle (rgba 0 0 0 1))
     (g.fillRect 0 0 WIDTH HEIGHT)
     (g.translate 150 150)
     (g.rotate angle)
+    (set! g.strokeStyle (rgba 0 255 0 0.5))
+    (g.strokeRect 100 0 brian.img.width brian.img.height)
     (brian.draw 100 0)
-    (set! angle (+ angle 1))
+    (set! angle (+ angle (* dt 0.001)))
     (g.restore)) 1)

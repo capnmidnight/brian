@@ -1,8 +1,27 @@
+function require() {
+    var args = Array.prototype.slice.call(arguments);
+    var translate = args[0] != false;
+    if (!translate)
+        args.shift();
+    for (var i = 0; i < args.length; ++i) {
+        var request = new XMLHttpRequest();
+        request.open("GET", args[i] + ".js", false);
+        request.send();
+        var script = request.responseText;
+        if (translate)
+            script = loosp2js(false, true, script);
+        var elm = document.createElement("script");
+        elm.type = "text/javascript";
+        elm.src = "data:text/javascript;base64," + btoa(script);
+        document.head.appendChild(elm);
+    }
+}
+
 var loosp2js = (function () {
     "use strict";
-    function loosp2js(showScript, script) {
+    function loosp2js(showScript, excludeHeader, script) {
         if (script) {
-            return translate(script);
+            return translate(script, excludeHeader);
         }
         else {
             var arr = document.querySelectorAll("script[type='text/loosp']");
@@ -20,7 +39,7 @@ var loosp2js = (function () {
                     script = arr[i].innerHTML;
                 }
                 if (script) {
-                    script = loosp2js(showScript, script);
+                    script = loosp2js(showScript, excludeHeader, script);
                     if (showScript)
                         console.log(script);
                     var elm = document.createElement("script");
@@ -32,9 +51,10 @@ var loosp2js = (function () {
         }
     }
 
-    function translate(script) {
+    function translate(script, excludeHeader) {
         var formName, good = true,
-            program = { script: ["(class (LoospObject) (set! this.typeChain [\"LoospObject\"]) (method (getType) this.typeChain[0]))\n " + script.trim()] };
+            header = !excludeHeader ? "(class (LoospObject) (set! this.typeChain [\"LoospObject\"]) (method (getType) this.typeChain[0]))\n " : "",
+            program = { script: [header + script.trim()] };
         for (var formName in grammar)
             program[formName] = [];
         for (var formName in grammar)
@@ -107,7 +127,7 @@ var loosp2js = (function () {
             pattern: /("[^"]*"|\b\d+\.\d+\b|\b\d+\b)/g,
             translate: function (program, tokens, match) {
                 if (match[0] == "\"")
-                    match = match.replace(/\n/g, "\\n\"\n+\"");
+                    match = match.replace(/(\n|\r\n|\r)/g, "\\n\"$1+\"");
                 return makeExpr(program, "literal", match);
             },
             validate: /("[^"]*\n)/g,
