@@ -10,7 +10,9 @@ var format = require("util").format,
 //    socketio = require("socket.io"),
 //    io = socketio.listen(app);
 //    io.set("log level", 2);
-
+function startBrowser() {
+    proc.execFile("explorer", ["http://127.0.0.1:" + port]);
+}
 rl.setPrompt('BRIAN ADMIN :> ');
 rl.on('line', function (line) {
     var cmd = line.trim();
@@ -19,8 +21,17 @@ rl.on('line', function (line) {
         if (cmd == "push") {
             push = proc.execFile("push.bat");
             push.stdout.on("data", function (data) {
-                console.log("FTP: ", data);
+                console.log("FTP OUT: ", data);
             });
+            push.stdin.on("data", function (data) {
+                console.log("FTP IN: ", data);
+            });
+            push.stderr.on("data", function (data) {
+                console.log("FTP ERR: ", data);
+            });
+        }
+        else if (cmd == "start") {
+            startBrowser();
         }
         else
             console.log(eval(cmd));
@@ -37,5 +48,5 @@ rl.prompt();
 app.listen(port);
 
 if (process.argv.indexOf("--test") > -1) {
-    proc.execFile("explorer", ["http://127.0.0.1:"+port]);
+    startBrowser();
 }
