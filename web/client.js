@@ -1,7 +1,18 @@
 (define brian (new Fish 100 100))
+(define shark (new Shark 100 100))
 (define bubbles [])
 (define plants null)
 (define fish null)
+(define jellies null)
+
+(define (makeJellies i)
+    (set! jellies [])
+    (while (> i 0)
+        (jellies.push (new Jelly (+ MID_WIDTH (rand MID_WIDTH)) (rand MID_HEIGHT)))
+        (set! i (- i  1)))
+        undefined)
+
+(makeJellies 5)
 
 (define (makePlants i)
     (set! plants [])
@@ -23,65 +34,6 @@
 
 (define G 0.00005)
 
-(define (boids arr dt)
-    (define all (arr.concat brian))
-    (arr.forEach (lambda (f)
-        (define v1 (rule1 all f))
-        (define v2 (rule2 all f))
-        (define v3 (rule3 all f))
-        (v1.iadd v2)
-        (v1.iadd v3)
-        (v1.idiv 10000)
-        (f.spd.iadd v1)
-        (f.update dt)
-        undefined)))
-
-(define MAX_DIST 100)
-
-// steer torwards local center
-(define (rule1 arr f)
-    (define center (new Vector 0 0))
-    (define count 0)
-    (for (var i in arr)
-        (define dir (arr[i].loc.sub f.loc))
-        (define dist (dir.mag))
-        (when (!= arr[i] f)
-            (center.iadd arr[i].loc)
-            (set! count (+ 1 count))))
-    (when (> count 0)
-        (center.idiv count)
-        (center.isub f.loc))
-    (center.div 4))
-
-// steer away from local fish 
-(define (rule2 arr f)
-    (define center (new Vector 0 0))
-    (define count 0)
-    (for (var i in arr)
-        (define dir (arr[i].loc.sub f.loc))
-        (define dist (dir.mag))
-        (when (and (!= arr[i] f) (< dist MAX_DIST))
-            (center.iadd arr[i].loc)
-            (set! count (+ 1 count))))
-    (when (> count 0)
-        (center.idiv count)
-        (set! center (f.loc.sub center)))
-    (center.mul 3))
-
-// average direction
-(define (rule3 arr f)
-    (define center (new Vector 0 0))
-    (define count 0)
-    (for (var i in arr)
-        (define dir (arr[i].loc.sub f.loc))
-        (define dist (dir.mag))
-        (when (and (!= arr[i] f) (< dist MAX_DIST))
-            (center.iadd arr[i].spd)
-            (set! count (+ 1 count))))
-    (when (> count 0)
-        (center.idiv count))
-    (center.div 2))
-
 (define (clrscrn)
     (define y 0)
     (define b 127)
@@ -102,15 +54,21 @@
     (set! lt t)
     
     (clrscrn)
-    (boids fish dt)
+    (g.save)
+    (g.translate (- MID_WIDTH brian.loc.x) 0)
+    (set! bubbles (bubbles.concat (boids fish dt)))
     (set! bubbles (bubbles.concat (brian.update dt)))
     (brian.draw)
     (fish.forEach (lambda (obj) (obj.draw)))
-    ((bubbles.concat plants).forEach (lambda (obj)
+    ((((bubbles.concat 
+        plants).concat 
+        jellies).concat 
+        shark).forEach (lambda (obj)
         (obj.update dt)
         (obj.draw)))
 
     (set! bubbles (bubbles.filter (lambda (b) (> b.loc.y 0))))
+    (g.restore)
     undefined) 1)
 
 (define (move ddx ddy)
@@ -123,10 +81,10 @@
     (move 0.1 0))
 
 (define (moveUp)
-    (move 0 -0.1))
+    (move 0 -0.2))
 
 (define (moveDown)
-    (move 0 0.1))
+    (move 0 0.05))
 
 (define (movePoint x y)
     (if (< x brian.loc.x)

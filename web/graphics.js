@@ -50,8 +50,6 @@
     (set! this.midY (* -0.5 height))
     (method (draw)
         (g.drawImage this.img.canv this.midX this.midY)
-        //(set! g.strokeStyle "#ff00ff")
-        //(g.strokeRect this.midX this.midY this.img.width this.img.height)
         undefined))
 
 (class (Animation width height shapes duration runOnce)
@@ -95,6 +93,9 @@
         (g.save)
         (g.translate this.loc.x this.loc.y)
         (define angle (Math.atan2 this.spd.y this.spd.x))
+        (when (< this.spd.x 0)
+            (g.scale -1 1)
+            (set! angle (- Math.PI angle)))
         (g.rotate angle)
         (this.animation.draw)
         (g.restore)))
