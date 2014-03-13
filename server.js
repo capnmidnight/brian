@@ -1,17 +1,21 @@
 var format = require("util").format,
     readline = require('readline'),
+    os_ = require("os"),
     fs = require("fs"),
     http = require("http"),
     proc = require("child_process"),
     webServer = require("./src/webServer.js"),
     app = http.createServer(webServer("./web/")),
     rl = readline.createInterface(process.stdin, process.stdout),
-    port = 8080;
+    port = 8080,
+    os = os_.platform(),
+    pushScript = os == "win32" ? "push.bat" : "./push.sh",
+    browseScript = os == "win32" ? "explorer" : "xdg-open";
 //    socketio = require("socket.io"),
 //    io = socketio.listen(app);
 //    io.set("log level", 2);
 function startBrowser() {
-    proc.execFile("explorer", ["http://127.0.0.1:" + port]);
+    proc.execFile(browseScript, ["http://127.0.0.1:" + port]);
 }
 rl.setPrompt('BRIAN ADMIN :> ');
 rl.on('line', function (line) {
@@ -19,7 +23,7 @@ rl.on('line', function (line) {
     console.log(cmd);
     try {
         if (cmd == "push") {
-            push = proc.execFile("push.bat");
+            push = proc.execFile(pushScript);
             push.stdout.on("data", function (data) {
                 console.log("FTP OUT: ", data);
             });

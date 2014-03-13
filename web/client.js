@@ -24,6 +24,7 @@
 (makePlants 40)
 
 (define (makeFish i)
+    (log "fish")
     (set! fish [])
     (while (> i 0)
         (fish.push (new Fish (rand WIDTH) (rand HEIGHT)))
@@ -58,18 +59,17 @@
     (g.translate (- MID_WIDTH brian.loc.x) 0)
     (set! bubbles (bubbles.concat (boids fish dt)))
     (set! bubbles (bubbles.concat (brian.update dt)))
+
     (brian.draw)
     (fish.forEach (lambda (obj) (obj.draw)))
-    ((((bubbles.concat 
-        plants).concat 
-        jellies).concat 
-        shark).forEach (lambda (obj)
-        (obj.update dt)
-        (obj.draw)))
+    (shark.update dt)
+    (shark.draw)
+    (bubbles.forEach (lambda (obj) (obj.update dt) (obj.draw)))
+    (plants.forEach (lambda (obj) (obj.update dt) (obj.draw)))
 
     (set! bubbles (bubbles.filter (lambda (b) (> b.loc.y 0))))
     (g.restore)
-    undefined) 1)
+    undefined) 15)
 
 (define (move ddx ddy)
     (set! brian.spd (brian.spd.add (new Vector ddx ddy))))

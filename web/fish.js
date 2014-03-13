@@ -1,5 +1,10 @@
 ﻿(class (Fish:BoardObject x y)
-    (base x y (new Animation 40 60 {"22px monospace #c0c0c0":["><>" "-<>"]} 1000))
+    (base x y 
+        (new Animation 40 22 1000
+            (pattern-group 22 "#c0c0c0"
+                "><>"
+                "-<>")))
+
     (set! this.lastBubble 0)
     (method (update dt)
         (BoardObject.prototype.update.call this dt)
@@ -23,7 +28,13 @@
                 ret))
 
 (class (Bubble:BoardObject x y)
-    (base x y (new Animation 10 10 {"10px monospace #0000ff":["." "o" "O"]} 3000 true))
+    (base x y 
+        (new Animation 10 10 3000
+            (pattern-group 10 "#0000ff"
+                "."
+                "o"
+                "O") true))
+
     (set! this.spd.y -0.01))
 
 (define (boids arr dt)
